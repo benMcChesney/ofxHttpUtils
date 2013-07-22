@@ -12,8 +12,6 @@
 
 #include "ofMain.h"
 
-#include "ofxThread.h"
-
 #include "Poco/Net/HTTPClientSession.h"
 #include "Poco/Net/HTTPRequest.h"
 #include "Poco/Net/HTTPResponse.h"
@@ -65,7 +63,7 @@ struct ofxHttpResponse{
 	string location;
 };
 
-class ofxHttpUtils : public ofxThread{
+class ofxHttpUtils : public ofThread{
 
 	public:
 
@@ -119,6 +117,7 @@ class ofxHttpUtils : public ofxThread{
 		// http utils
 		string generateUrl(ofxHttpForm & form);
 		ofxHttpResponse doPostForm(ofxHttpForm & form);
+        ofxHttpResponse doPutForm(ofxHttpForm & form);
 
 		std::queue<ofxHttpForm> forms;
 		vector<HTTPCookie> cookies;

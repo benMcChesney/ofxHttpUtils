@@ -59,11 +59,20 @@ void ofxHttpUtils::threadedFunction(){
 			if(form.method==OFX_HTTP_POST){
 				doPostForm(form);
 				printf("ofxHttpUtils: (thread running) form submitted (post): %s\n", form.name.c_str());
-			}else{
+			}
+            else if ( form.method == OFX_HTTP_GET )
+            {
 				string url = generateUrl(form);
 				printf("ofxHttpUtils: (thread running) form submitted (get): %s\n", form.name.c_str());
 				getUrl(url);
 			}
+            else if ( form.method == OFX_HTTP_PUT )
+            {
+                //string url = generateUrl(form);
+                doPutForm(form);
+				printf("ofxHttpUtils: (thread running) form submitted (put): %s\n", form.name.c_str());
+				            }
+            
     		lock();
 			forms.pop();
 	    	unlock();
@@ -106,6 +115,39 @@ string ofxHttpUtils::generateUrl(ofxHttpForm & form) {
     return url;
 }
 
+
+ofxHttpResponse ofxHttpUtils::doPutForm(ofxHttpForm & form)
+{
+    try {
+        URI uri( form.action.c_str() );
+        std::string path(uri.getPathAndQuery());
+        cout << "ofxHttpUtils::put: "<< uri.getPathAndQuery() << endl;
+        if (path.empty()) path = "/";
+        
+        /*
+        Poco::Net::HTTPClientSession session("www.example.com");
+        Poco::Net::HTTPRequest request(Poco::Net::HTTPRequest::HTTP_PUT, "/foo");
+        */
+        
+        HTTPClientSession session(uri.getHost(), uri.getPort());
+        HTTPRequest request(HTTPRequest::HTTP_PUT, path, HTTPMessage::HTTP_1_1);
+        
+        std::ostream& os = session.sendRequest(request);
+        
+        std::ifstream ifs("thefile.txt"); // missing: error handling
+        Poco::StreamCopier::copyStream(ifs, os); // that's it :-)
+        
+        Poco::Net::HTTPResponse response;
+        std::istream& rs = session.receiveResponse(response);
+        // Do something with rs...
+        
+    } catch (Poco::Exception& e) {
+        std::cout << e.displayText() << std::endl;
+    }
+
+}
+ 
+
 // ----------------------------------------------------------------------
 ofxHttpResponse ofxHttpUtils::doPostForm(ofxHttpForm & form){
 	ofxHttpResponse response;
@@ -115,6 +157,7 @@ ofxHttpResponse ofxHttpUtils::doPostForm(ofxHttpForm & form){
         cout << "ofxHttpUtils::post: "<< uri.getPathAndQuery() << endl;
         if (path.empty()) path = "/";
 
+      
         HTTPClientSession session(uri.getHost(), uri.getPort());
         HTTPRequest req(HTTPRequest::HTTP_POST, path, HTTPMessage::HTTP_1_1);
         if(auth.getUsername()!="") auth.authenticate(req);
