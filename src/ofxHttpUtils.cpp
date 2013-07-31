@@ -57,11 +57,13 @@ void ofxHttpUtils::threadedFunction(){
 			ofxHttpForm form = forms.front();
 	    	unlock();
 			if(form.method==OFX_HTTP_POST){
+             //   cout << " POST form.name : " << form.name.c_str() ;
 				doPostForm(form);
 				printf("ofxHttpUtils: (thread running) form submitted (post): %s\n", form.name.c_str());
 			}
             else if ( form.method == OFX_HTTP_GET )
             {
+             //   cout << " GET form.name : " << form.name.c_str() ;
 				string url = generateUrl(form);
 				printf("ofxHttpUtils: (thread running) form submitted (get): %s\n", form.name.c_str());
 				getUrl(url);
@@ -69,9 +71,10 @@ void ofxHttpUtils::threadedFunction(){
             else if ( form.method == OFX_HTTP_PUT )
             {
                 //string url = generateUrl(form);
-                doPutForm(form);
-				printf("ofxHttpUtils: (thread running) form submitted (put): %s\n", form.name.c_str());
-				            }
+                //cout << " PUT form.name : '" << form.name.c_str() << "'" << endl ;
+                //oPutForm(form);
+				//printf("ofxHttpUtils: (thread running) form submitted (put): %s\n", form.name.c_str());
+            }
             
     		lock();
 			forms.pop();
@@ -151,15 +154,18 @@ ofxHttpResponse ofxHttpUtils::doPutForm(ofxHttpForm & form)
 // ----------------------------------------------------------------------
 ofxHttpResponse ofxHttpUtils::doPostForm(ofxHttpForm & form){
 	ofxHttpResponse response;
+
     try{
         URI uri( form.action.c_str() );
         std::string path(uri.getPathAndQuery());
-        cout << "ofxHttpUtils::post: "<< uri.getPathAndQuery() << endl;
+        cout << "ofxHttpUtils::PUT: "<< uri.getPathAndQuery() << endl;
         if (path.empty()) path = "/";
 
       
         HTTPClientSession session(uri.getHost(), uri.getPort());
+        
         HTTPRequest req(HTTPRequest::HTTP_POST, path, HTTPMessage::HTTP_1_1);
+        //HTTPRequest req(HTTPRequest::HTTP_PUT, path, HTTPMessage::HTTP_1_1);
         if(auth.getUsername()!="") auth.authenticate(req);
 
         if(sendCookies){
